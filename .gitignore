@@ -1,0 +1,17 @@
+# SDK / Eclipse build artifacts
+Debug/
+Release/
+*.elf
+*.o
+*.d
+*.a
+*.map
+*.axf
+
+# Eclipse project metadata (generated, not portable)
+.cproject
+.project
+.settings/
+
+# Xilinx SDK specifics
+Xilinx.spec
