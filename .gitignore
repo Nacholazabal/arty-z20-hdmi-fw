@@ -15,3 +15,9 @@ Release/
 
 # Xilinx SDK specifics
 Xilinx.spec
+
+# Project-specific excludes
+src/CHANGES.md
+src/CLAUDE.md
+src/lscript.ld
+src/README.txt
