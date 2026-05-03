@@ -37,6 +37,8 @@
 #include "xil_types.h"
 #include "xil_cache.h"
 #include "timer_ps/timer_ps.h"
+#include "overlay_ctrl/overlay_ctrl.h"
+#include "subtitle_hw/subtitle_hw.h"
 #include "xparameters.h"
 
 /*
@@ -208,6 +210,18 @@ int DemoInitialize()
 	VideoSetCallback(&videoCapt, DemoISR, (void *)(char *)&fRefresh);
 	LOG_INFO("Signal detect/loss callback registered");
 
+	/*
+	 * Initialize subtitle BRAM overlay (axis_video_overlay_rect).
+	 * This IP owns XPAR_AXIS_VIDEO_OVERLAY_R_0_BASEADDR; its register map
+	 * supersedes the old overlay_ctrl layout, so overlay_init_defaults /
+	 * overlay_apply_all are no longer called here.
+	 * NOTE: SUBTITLE_BRAM_BASEADDR and SUBTITLE_OVLY_BASEADDR in
+	 * subtitle_hw.h must match your xparameters.h before building.
+	 */
+	LOG_INFO("Initializing subtitle hardware...");
+	subtitle_hw_init();
+	LOG_INFO("Subtitle hardware initialized.");
+
 	LOG_INFO("=== Init complete. Connect HDMI source, then press 5 to stream. ===");
 	xil_printf("\r\n");
 
@@ -325,6 +339,14 @@ void DemoRun()
 			DisplayChangeFrame(&dispCtrl, nextFrame);
 			LOG_INFO("Done. Displaying scaled frame %d.", nextFrame);
 			break;
+		case 'o':
+			LOG_INFO("Entering overlay control mode...");
+			overlay_uart_interactive_loop();
+			break;
+		case 't':
+			LOG_INFO("Running subtitle hardware self-test...");
+			subtitle_hw_self_test();
+			break;
 		case 'd':
 			DemoDiagnostics();
 			/* Wait for any key before returning to menu */
@@ -406,6 +428,8 @@ void DemoPrintMenu()
 	xil_printf("6 - Change Video Capture Frame Buffer Index\n\r");
 	xil_printf("7 - Grab Frame and Invert Colors\n\r");
 	xil_printf("8 - Grab Frame and Scale to Display Resolution\n\r");
+	xil_printf("o - Overlay Control Mode (move/resize/color subtitle bar)\n\r");
+	xil_printf("t - Subtitle Hardware Self-Test (checkerboard + blink)\n\r");
 	xil_printf("d - Print System Diagnostics\n\r");
 	xil_printf("q - Quit\n\r");
 	xil_printf("\n\r");
